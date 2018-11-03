@@ -87,51 +87,55 @@ def handle_message(event):
     if event.message.text=='喵皇上 臣把事辦好拉!':
         conn = sqlite.connect('%s/data/db/user_data.db'%(FileRoute))
         c = conn.cursor()
-        memo = c.execute('SELECT Memo FROM %s'%(event.source.user_id))
+        memo = c.execute("SELECT Memo FROM %s WHERE status ='working'"%(event.source.user_id))
         memo = memo.fetchall()
         conn.commit()
         conn.close()
 
-        contents = get_contents(memo)
-        flex={
-            "type":"flex",
-            "altText":"This is a Flex Message",
-            "contents":{
-                "type": "bubble",
-                "hero": {
-                    "type": "image",
-                    "url": "https://i.imgur.com/cdSahMt.jpg",
-                    "size": "full",
-                    "aspectRatio": "20:13",
-                    "aspectMode": "cover",
-                },
-                "body": {
-                    "type": "box",
-                    "layout": "vertical",
-                    "contents": [
-                        {
-                            "type": "text",
-                            "text": "哪尼!你又完成了哪一件!?",
-                            "weight": "bold",
-                            "size": "xl"
-                            }
-                        ]
+        if memo != []:
+            contents = get_contents(memo)
+            flex={
+                "type":"flex",
+                "altText":"This is a Flex Message",
+                "contents":{
+                    "type": "bubble",
+                    "hero": {
+                        "type": "image",
+                        "url": "https://i.imgur.com/cdSahMt.jpg",
+                        "size": "full",
+                        "aspectRatio": "20:13",
+                        "aspectMode": "cover",
                     },
-                "footer": {
-                    "type": "box",
-                    "layout": "vertical",
-                    "spacing": "xs",
-                    "contents": contents,
-                    "flex": 0
+                    "body": {
+                        "type": "box",
+                        "layout": "vertical",
+                        "contents": [
+                            {
+                                "type": "text",
+                                "text": "哪尼!你又完成了哪一件!?",
+                                "weight": "bold",
+                                "size": "xl"
+                                }
+                            ]
+                        },
+                    "footer": {
+                        "type": "box",
+                        "layout": "vertical",
+                        "spacing": "xs",
+                        "contents": contents,
+                        "flex": 0
+                    }
                 }
             }
-        }
-        headers = {'Content-Type':'application/json','Authorization':'Bearer %s'%(LINE_TOKEN)}
-        payload = {
-            'replyToken':event.reply_token,
-            'messages':[flex]
-            }
-        res=requests.post('https://api.line.me/v2/bot/message/reply',headers=headers,data=json.dumps(payload))
+            headers = {'Content-Type':'application/json','Authorization':'Bearer %s'%(LINE_TOKEN)}
+            payload = {
+                'replyToken':event.reply_token,
+                'messages':[flex]
+                }
+            res=requests.post('https://api.line.me/v2/bot/message/reply',headers=headers,data=json.dumps(payload))
+        else:
+            line_bot_api.reply_message(
+                event.reply_token, TextSendMessage(text='目前沒記事呀'))
 
     elif event.message.text == "喵皇上 臣完成了甚麼事?":
         conn = sqlite.connect('%s/data/db/user_data.db'%(FileRoute))
@@ -141,25 +145,29 @@ def handle_message(event):
         conn.commit()
         conn.close()
         
-        messages = ''
-        for item in memo:
-            messages += '%s\n'%(item[0])
-        messages = messages[0:len(messages)-1]
-            
-        headers = {'Content-Type':'application/json','Authorization':'Bearer %s'%(LINE_TOKEN)}
-        payload = {
-            'replyToken':event.reply_token,
-            'messages':[{
-                "type":"text",
-                "text": '好吧 我就告訴你吧'
-                },
-                {
-                "type":"text",
-                "text": messages
-                }]
-            }
-        res=requests.post('https://api.line.me/v2/bot/message/reply',headers=headers,data=json.dumps(payload))
-        print(res.text)
+        if memo != []:
+            messages = ''
+            for item in memo:
+                messages += '%s\n'%(item[0])
+            messages = messages[0:len(messages)-1]
+                
+            headers = {'Content-Type':'application/json','Authorization':'Bearer %s'%(LINE_TOKEN)}
+            payload = {
+                'replyToken':event.reply_token,
+                'messages':[{
+                    "type":"text",
+                    "text": '好吧 我就告訴你吧'
+                    },
+                    {
+                    "type":"text",
+                    "text": messages
+                    }]
+                }
+            res=requests.post('https://api.line.me/v2/bot/message/reply',headers=headers,data=json.dumps(payload))
+            print(res.text)
+        else:
+            line_bot_api.reply_message(
+                event.reply_token, TextSendMessage(text='我說\n你目前啥事都沒完成啊'))
 
     else:
         conn = sqlite.connect('%s/data/db/user_data.db'%(FileRoute))
