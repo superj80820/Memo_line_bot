@@ -51,7 +51,6 @@ for item in user_id:
 conn.commit()
 conn.close()
 
-
 print(sent_list[0]['memo'])
 print(sent_list[0]['user_id'])
 for item in sent_list:
@@ -98,4 +97,12 @@ for item in sent_list:
             }
         res=requests.post('https://api.line.me/v2/bot/message/push',headers=headers,data=json.dumps(payload))
     else:
-        None
+        headers = {'Content-Type':'application/json','Authorization':'Bearer %s'%(LINE_TOKEN)}
+        payload = {
+            'to':item['user_id'],
+            'messages':[{
+                "type":"text",
+                "text": '眾臣阿~別忘了記事啊!'
+                }]
+            }
+        res=requests.post('https://api.line.me/v2/bot/message/push',headers=headers,data=json.dumps(payload))
