@@ -84,7 +84,7 @@ def handle_message(event):
             ]
         return content
 
-    if event.message.text=='喵皇上 臣把事辦好拉!':
+    if event.message.text=='完事':
         conn = sqlite.connect('%s/data/db/user_data.db'%(FileRoute))
         c = conn.cursor()
         memo = c.execute("SELECT Memo FROM %s WHERE status ='working'"%(event.source.user_id))
@@ -137,7 +137,7 @@ def handle_message(event):
             line_bot_api.reply_message(
                 event.reply_token, TextSendMessage(text='目前沒記事呀'))
 
-    elif event.message.text == "喵皇上 臣完成了甚麼事?":
+    elif event.message.text == "清單":
         conn = sqlite.connect('%s/data/db/user_data.db'%(FileRoute))
         c = conn.cursor()
         memo = c.execute("SELECT Memo FROM %s WHERE status ='done'"%(event.source.user_id))
